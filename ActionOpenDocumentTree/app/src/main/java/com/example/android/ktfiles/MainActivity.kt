@@ -21,12 +21,15 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.activity_main.toolbar
 
 class MainActivity : AppCompatActivity() {
+
+	var uri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +52,12 @@ class MainActivity : AppCompatActivity() {
                 openDirectoryButton.visibility = View.GONE
             } else {
                 openDirectoryButton.visibility = View.VISIBLE
+				contentResolver
+					.releasePersistableUriPermission(
+						uri!!,
+						Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+				)
+				Toast.makeText(this, "Permission revoked", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -63,9 +72,11 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == OPEN_DIRECTORY_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             val directoryUri = data?.data ?: return
 
+			uri = directoryUri
+
             contentResolver.takePersistableUriPermission(
                 directoryUri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
             )
             showDirectoryContents(directoryUri)
         }
